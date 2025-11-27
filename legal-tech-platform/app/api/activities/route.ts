@@ -46,12 +46,6 @@ export async function GET(request: NextRequest) {
             id: true,
             title: true
           }
-        },
-        document: {
-          select: {
-            id: true,
-            name: true
-          }
         }
       }
     })
