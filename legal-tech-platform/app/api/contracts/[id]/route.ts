@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
 // GET /api/contracts/[id] - Get a specific contract
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const contract = await prisma.contract.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
           select: {
@@ -53,10 +53,11 @@ export async function GET(
 // PUT /api/contracts/[id] - Update a contract
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -74,34 +75,32 @@ export async function PUT(
 
     // Check if contract exists and user has permission
     const existingContract = await prisma.contract.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingContract) {
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 })
     }
 
-    if (existingContract.userId !== user.id) {
+    if (existingContract.createdBy !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Update the contract
     const contract = await prisma.contract.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title: data.title,
         type: data.type,
         status: data.status,
-        party1: data.party1,
-        party2: data.party2,
+        partyA: data.partyA,
+        partyB: data.partyB,
         startDate: data.startDate ? new Date(data.startDate) : null,
         endDate: data.endDate ? new Date(data.endDate) : null,
         value: data.value ? parseFloat(data.value) : null,
         description: data.description,
-        terms: data.terms,
-        jurisdiction: data.jurisdiction,
-        governingLaw: data.governingLaw,
-        currentStage: data.currentStage,
+        stage: data.stage,
+        priority: data.priority,
         riskScore: data.riskScore,
         complianceScore: data.complianceScore,
       },
@@ -110,7 +109,7 @@ export async function PUT(
     // Create activity log
     await prisma.activity.create({
       data: {
-        type: 'CONTRACT_UPDATED',
+        action: 'CONTRACT_UPDATED',
         description: `Contract "${contract.title}" updated`,
         userId: user.id,
         contractId: contract.id,
@@ -130,10 +129,11 @@ export async function PUT(
 // DELETE /api/contracts/[id] - Delete a contract
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -149,20 +149,20 @@ export async function DELETE(
 
     // Check if contract exists and user has permission
     const existingContract = await prisma.contract.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingContract) {
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 })
     }
 
-    if (existingContract.userId !== user.id) {
+    if (existingContract.createdBy !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Delete the contract
     await prisma.contract.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Contract deleted successfully' })
