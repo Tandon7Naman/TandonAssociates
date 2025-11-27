@@ -109,10 +109,11 @@ export async function PUT(
     // Create activity log
     await prisma.activity.create({
       data: {
-        action: 'CONTRACT_UPDATED',
+        action: 'Updated',
+        entity: 'Contract',
+        entityId: contract.id,
         description: `Contract "${contract.title}" updated`,
         userId: user.id,
-        contractId: contract.id,
       },
     })
 
