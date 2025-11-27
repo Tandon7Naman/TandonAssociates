@@ -45,10 +45,10 @@ export async function createCase(data: any) {
   return response.json()
 }
 
-export async function fetchCompliance(params?: { status?: string; category?: string }) {
+export async function fetchCompliance(params?: { status?: string; type?: string }) {
   const searchParams = new URLSearchParams()
   if (params?.status) searchParams.append('status', params.status)
-  if (params?.category) searchParams.append('category', params.category)
+  if (params?.type) searchParams.append('type', params.type)
   
   const response = await fetch(`/api/compliance?${searchParams}`)
   if (!response.ok) throw new Error('Failed to fetch compliance')
