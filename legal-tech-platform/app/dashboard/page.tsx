@@ -14,7 +14,9 @@ import { Badge } from '@/components/ui/badge'
 
 async function getDashboardData() {
   try {
-    const response = await fetch('http://localhost:3003/api/dashboard', {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3003')
+    const response = await fetch(`${baseUrl}/api/dashboard`, {
       cache: 'no-store'
     })
     if (!response.ok) throw new Error('Failed to fetch')
