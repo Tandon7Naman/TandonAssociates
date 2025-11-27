@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     // Build filter object
     const where: any = {
-      userId: user.id,
+      createdBy: user.id,
     }
 
     if (status) {
@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
-        { party1: { contains: search, mode: 'insensitive' } },
-        { party2: { contains: search, mode: 'insensitive' } },
+        { partyA: { contains: search, mode: 'insensitive' } },
+        { partyB: { contains: search, mode: 'insensitive' } },
       ]
     }
 
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     const data = await request.json()
 
     // Validate required fields
-    if (!data.title || !data.type || !data.party1 || !data.party2) {
+    if (!data.title || !data.type || !(data.party1 || data.partyA) || !(data.party2 || data.partyB)) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -104,29 +104,25 @@ export async function POST(request: NextRequest) {
         title: data.title,
         type: data.type,
         status: data.status || 'DRAFT',
-        party1: data.party1,
-        party2: data.party2,
+        stage: data.stage || 'INITIATION',
+        partyA: data.party1 || data.partyA,
+        partyB: data.party2 || data.partyB,
         startDate: data.startDate ? new Date(data.startDate) : null,
         endDate: data.endDate ? new Date(data.endDate) : null,
         value: data.value ? parseFloat(data.value) : null,
         description: data.description || null,
-        terms: data.terms || null,
-        jurisdiction: data.jurisdiction || null,
-        governingLaw: data.governingLaw || null,
-        userId: user.id,
-        currentStage: 'DRAFTING',
-        riskScore: 0,
-        complianceScore: 0,
+        createdBy: user.id,
       },
     })
 
     // Create initial activity log
     await prisma.activity.create({
       data: {
-        type: 'CONTRACT_CREATED',
+        action: 'Created',
+        entity: 'Contract',
+        entityId: contract.id,
         description: `Contract "${contract.title}" created`,
         userId: user.id,
-        contractId: contract.id,
       },
     })
 

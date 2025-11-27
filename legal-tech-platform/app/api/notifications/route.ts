@@ -18,22 +18,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const notifications = await prisma.notification.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-      take: 50
-    })
-
-    const unreadCount = await prisma.notification.count({
-      where: {
-        userId: user.id,
-        read: false
-      }
-    })
-
+    // Notification model doesn't exist in schema, return empty for now
     return NextResponse.json({
-      notifications,
-      unreadCount
+      notifications: [],
+      unreadCount: 0
     })
   } catch (error) {
     console.error('Error fetching notifications:', error)
@@ -60,30 +48,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const { notificationId, markAllAsRead } = await request.json()
-
-    if (markAllAsRead) {
-      await prisma.notification.updateMany({
-        where: {
-          userId: user.id,
-          read: false
-        },
-        data: {
-          read: true
-        }
-      })
-      return NextResponse.json({ message: 'All notifications marked as read' })
-    }
-
-    if (notificationId) {
-      await prisma.notification.update({
-        where: { id: notificationId },
-        data: { read: true }
-      })
-      return NextResponse.json({ message: 'Notification marked as read' })
-    }
-
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+    // Notification model doesn't exist in schema
+    return NextResponse.json({ message: 'Notifications not implemented' })
   } catch (error) {
     console.error('Error updating notifications:', error)
     return NextResponse.json(

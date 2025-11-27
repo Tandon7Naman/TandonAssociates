@@ -24,32 +24,31 @@ export async function GET(request: NextRequest) {
       recentContracts,
       recentCases,
       upcomingDeadlines,
-      recentActivities,
-      notifications
+      recentActivities
     ] = await Promise.all([
       // Statistics
       prisma.$transaction([
-        prisma.contract.count({ where: { userId: user.id } }),
+        prisma.contract.count({ where: { createdBy: user.id } }),
         prisma.contract.count({ 
           where: { 
-            userId: user.id, 
-            status: { in: ['ACTIVE', 'UNDER_REVIEW'] }
+            createdBy: user.id, 
+            status: { in: ['ACTIVE', 'REVIEW', 'APPROVED'] }
           } 
         }),
-        prisma.case.count({ where: { userId: user.id } }),
+        prisma.case.count({ where: { createdBy: user.id } }),
         prisma.case.count({ 
           where: { 
-            userId: user.id, 
-            status: { in: ['PENDING', 'IN_PROGRESS'] }
+            createdBy: user.id, 
+            status: { in: ['OPEN', 'IN_PROGRESS'] }
           } 
         }),
         prisma.compliance.count({ 
           where: { 
-            userId: user.id, 
+            createdBy: user.id, 
             status: 'PENDING' 
           } 
         }),
-        prisma.document.count({ where: { userId: user.id } })
+        prisma.document.count({ where: { uploadedBy: user.id } })
       ]).then(([total, active, totalCases, activeCases, pending, docs]) => ({
         totalContracts: total,
         activeContracts: active,
@@ -61,7 +60,7 @@ export async function GET(request: NextRequest) {
 
       // Recent contracts
       prisma.contract.findMany({
-        where: { userId: user.id },
+        where: { createdBy: user.id },
         orderBy: { createdAt: 'desc' },
         take: 5,
         select: {
@@ -69,8 +68,8 @@ export async function GET(request: NextRequest) {
           title: true,
           status: true,
           type: true,
-          party1: true,
-          party2: true,
+          partyA: true,
+          partyB: true,
           value: true,
           createdAt: true,
           endDate: true
@@ -79,7 +78,7 @@ export async function GET(request: NextRequest) {
 
       // Recent cases
       prisma.case.findMany({
-        where: { userId: user.id },
+        where: { createdBy: user.id },
         orderBy: { createdAt: 'desc' },
         take: 5,
         select: {
@@ -89,7 +88,7 @@ export async function GET(request: NextRequest) {
           status: true,
           type: true,
           court: true,
-          nextHearing: true,
+          nextDate: true,
           createdAt: true
         }
       }),
@@ -97,7 +96,7 @@ export async function GET(request: NextRequest) {
       // Upcoming deadlines
       prisma.compliance.findMany({
         where: {
-          userId: user.id,
+          createdBy: user.id,
           status: { in: ['PENDING', 'IN_PROGRESS'] },
           dueDate: {
             gte: new Date(),
@@ -109,7 +108,7 @@ export async function GET(request: NextRequest) {
         select: {
           id: true,
           title: true,
-          category: true,
+          type: true,
           priority: true,
           dueDate: true,
           status: true
@@ -128,30 +127,20 @@ export async function GET(request: NextRequest) {
           case: {
             select: { title: true }
           },
-          document: {
-            select: { name: true }
+          compliance: {
+            select: { title: true }
           }
         }
-      }),
-
-      // Unread notifications
-      prisma.notification.findMany({
-        where: {
-          userId: user.id,
-          read: false
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 5
       })
     ])
 
+    // Return dashboard data
     return NextResponse.json({
       stats,
       recentContracts,
       recentCases,
       upcomingDeadlines,
       recentActivities,
-      notifications,
       user: {
         name: user.name,
         email: user.email,

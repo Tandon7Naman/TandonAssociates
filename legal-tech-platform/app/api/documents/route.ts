@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
 
     const where: any = {
-      userId: user.id,
+      uploadedBy: user.id,
     }
 
     if (type) {
@@ -32,8 +32,7 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
+        { name: { contains: search, mode: 'insensitive' } }
       ]
     }
 
@@ -95,22 +94,23 @@ export async function POST(request: NextRequest) {
       data: {
         name: data.name,
         type: data.type,
-        fileUrl: data.fileUrl || '',
-        fileSize: data.fileSize || 0,
-        mimeType: data.mimeType,
-        description: data.description,
+        url: data.fileUrl || data.url || '',
+        size: data.fileSize || data.size || 0,
+        mimeType: data.mimeType || 'application/octet-stream',
         contractId: data.contractId || null,
         caseId: data.caseId || null,
-        userId: user.id
+        complianceId: data.complianceId || null,
+        uploadedBy: user.id
       }
     })
 
     await prisma.activity.create({
       data: {
-        type: 'DOCUMENT_UPLOADED',
+        action: 'Uploaded',
+        entity: 'Document',
+        entityId: document.id,
         description: `Document "${document.name}" uploaded`,
-        userId: user.id,
-        documentId: document.id
+        userId: user.id
       }
     })
 
