@@ -26,36 +26,34 @@ export async function GET(request: NextRequest) {
       activeCases,
       pendingCompliance,
       overdueCompliance,
-      totalDocuments,
       recentActivities
     ] = await Promise.all([
-      prisma.contract.count({ where: { userId: user.id } }),
+      prisma.contract.count({ where: { createdBy: user.id } }),
       prisma.contract.count({ 
         where: { 
-          userId: user.id, 
+          createdBy: user.id, 
           status: { in: ['ACTIVE', 'UNDER_REVIEW', 'PENDING_SIGNATURE'] }
         } 
       }),
-      prisma.case.count({ where: { userId: user.id } }),
+      prisma.case.count({ where: { createdBy: user.id } }),
       prisma.case.count({ 
         where: { 
-          userId: user.id, 
+          createdBy: user.id, 
           status: { in: ['PENDING', 'IN_PROGRESS'] }
         } 
       }),
       prisma.compliance.count({ 
         where: { 
-          userId: user.id, 
+          createdBy: user.id, 
           status: 'PENDING' 
         } 
       }),
       prisma.compliance.count({ 
         where: { 
-          userId: user.id, 
+          createdBy: user.id, 
           status: 'OVERDUE' 
         } 
       }),
-      prisma.document.count({ where: { userId: user.id } }),
       prisma.activity.findMany({
         where: { userId: user.id },
         orderBy: { createdAt: 'desc' },
@@ -74,21 +72,21 @@ export async function GET(request: NextRequest) {
     // Get contract statistics by status
     const contractsByStatus = await prisma.contract.groupBy({
       by: ['status'],
-      where: { userId: user.id },
+      where: { createdBy: user.id },
       _count: true
     })
 
     // Get case statistics by type
     const casesByType = await prisma.case.groupBy({
       by: ['type'],
-      where: { userId: user.id },
+      where: { createdBy: user.id },
       _count: true
     })
 
-    // Get compliance by category
-    const complianceByCategory = await prisma.compliance.groupBy({
-      by: ['category'],
-      where: { userId: user.id },
+    // Get compliance by type
+    const complianceByType = await prisma.compliance.groupBy({
+      by: ['type'],
+      where: { createdBy: user.id },
       _count: true
     })
 
@@ -99,7 +97,7 @@ export async function GET(request: NextRequest) {
     const contractTrends = await prisma.contract.groupBy({
       by: ['createdAt'],
       where: {
-        userId: user.id,
+        createdBy: user.id,
         createdAt: {
           gte: sixMonthsAgo
         }
@@ -114,12 +112,11 @@ export async function GET(request: NextRequest) {
         totalCases,
         activeCases,
         pendingCompliance,
-        overdueCompliance,
-        totalDocuments
+        overdueCompliance
       },
       contractsByStatus,
       casesByType,
-      complianceByCategory,
+      complianceByType,
       contractTrends,
       recentActivities
     })
