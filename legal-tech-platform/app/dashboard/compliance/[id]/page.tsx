@@ -137,11 +137,12 @@ function getScoreColor(score: number) {
   return 'text-red-600'
 }
 
-export default function ComplianceDetailPage({
+export default async function ComplianceDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   return (
     <div className="space-y-6">
       {/* Header */}
