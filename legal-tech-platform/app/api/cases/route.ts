@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
 
     const where: any = {
-      userId: user.id,
+      createdBy: user.id,
     }
 
     if (status) {
@@ -94,20 +94,21 @@ export async function POST(request: NextRequest) {
         court: data.court,
         judge: data.judge,
         filingDate: data.filingDate ? new Date(data.filingDate) : new Date(),
-        nextHearing: data.nextHearing ? new Date(data.nextHearing) : null,
+        nextDate: data.nextHearing ? new Date(data.nextHearing) : null,
         description: data.description,
         plaintiff: data.plaintiff,
         defendant: data.defendant,
-        userId: user.id
+        createdBy: user.id
       }
     })
 
     await prisma.activity.create({
       data: {
-        type: 'CASE_CREATED',
+        action: 'Created',
+        entity: 'Case',
+        entityId: caseRecord.id,
         description: `Case "${caseRecord.title}" created`,
-        userId: user.id,
-        caseId: caseRecord.id
+        userId: user.id
       }
     })
 
