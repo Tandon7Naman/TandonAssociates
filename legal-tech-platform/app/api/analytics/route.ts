@@ -32,14 +32,14 @@ export async function GET(request: NextRequest) {
       prisma.contract.count({ 
         where: { 
           createdBy: user.id, 
-          status: { in: ['ACTIVE', 'UNDER_REVIEW', 'PENDING_SIGNATURE'] }
+          status: { in: ['ACTIVE', 'REVIEW', 'APPROVED'] }
         } 
       }),
       prisma.case.count({ where: { createdBy: user.id } }),
       prisma.case.count({ 
         where: { 
           createdBy: user.id, 
-          status: { in: ['PENDING', 'IN_PROGRESS'] }
+          status: { in: ['OPEN', 'IN_PROGRESS'] }
         } 
       }),
       prisma.compliance.count({ 
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       prisma.compliance.count({ 
         where: { 
           createdBy: user.id, 
-          status: 'OVERDUE' 
+          status: 'NON_COMPLIANT' 
         } 
       }),
       prisma.activity.findMany({
