@@ -20,18 +20,18 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status')
-    const category = searchParams.get('category')
+    const type = searchParams.get('type')
 
     const where: any = {
-      userId: user.id,
+      createdBy: user.id,
     }
 
     if (status) {
       where.status = status
     }
 
-    if (category) {
-      where.category = category
+    if (type) {
+      where.type = type
     }
 
     const compliance = await prisma.compliance.findMany({
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       orderBy: { dueDate: 'asc' },
       include: {
         audits: {
-          orderBy: { completedAt: 'desc' },
+          orderBy: { createdAt: 'desc' },
           take: 1
         }
       }
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json()
 
-    if (!data.title || !data.category || !data.requirement) {
+    if (!data.title || !data.type || !data.regulation) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -83,24 +83,25 @@ export async function POST(request: NextRequest) {
     const compliance = await prisma.compliance.create({
       data: {
         title: data.title,
-        category: data.category,
-        requirement: data.requirement,
+        type: data.type,
+        regulation: data.regulation,
         status: data.status || 'PENDING',
         priority: data.priority || 'MEDIUM',
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         description: data.description,
-        regulation: data.regulation,
         jurisdiction: data.jurisdiction,
-        userId: user.id
+        requirements: data.requirements,
+        createdBy: user.id
       }
     })
 
     await prisma.activity.create({
       data: {
-        type: 'COMPLIANCE_CREATED',
+        action: 'Created',
+        entity: 'Compliance',
+        entityId: compliance.id,
         description: `Compliance item "${compliance.title}" created`,
-        userId: user.id,
-        complianceId: compliance.id
+        userId: user.id
       }
     })
 
