@@ -136,7 +136,9 @@ function getPriorityColor(priority: string) {
   return colors[priority] || 'bg-gray-100 text-gray-800'
 }
 
-export default function CaseDetailPage({ params }: { params: { id: string } }) {
+export default async function CaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  
   return (
     <div className="space-y-6">
       {/* Header */}
