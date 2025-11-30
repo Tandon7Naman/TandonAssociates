@@ -3,7 +3,12 @@ import { z } from 'zod'
 export const registerSchema = z.object({
   name: z.string().min(2).max(50).regex(/^[a-zA-Z\s]+$/),
   email: z.string().email().toLowerCase(),
-  password: z.string().min(8).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[a-z]/, 'Password must contain lowercase letter')
+    .regex(/[A-Z]/, 'Password must contain uppercase letter')
+    .regex(/\d/, 'Password must contain number')
+    .regex(/[@$!%*?&]/, 'Password must contain special character (@$!%*?&)'),
 })
 
 export const loginSchema = z.object({
