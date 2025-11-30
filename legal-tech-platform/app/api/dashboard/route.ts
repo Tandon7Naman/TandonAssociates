@@ -1,24 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { getAuthenticatedUser, createUnauthorizedResponse } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const user = await getAuthenticatedUser()
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    // Fetch all dashboard data in parallel
     const [
       stats,
       recentContracts,
@@ -26,7 +13,6 @@ export async function GET(request: NextRequest) {
       upcomingDeadlines,
       recentActivities
     ] = await Promise.all([
-      // Statistics
       prisma.$transaction([
         prisma.contract.count({ where: { createdBy: user.id } }),
         prisma.contract.count({ 
@@ -58,7 +44,6 @@ export async function GET(request: NextRequest) {
         totalDocuments: docs
       })),
 
-      // Recent contracts
       prisma.contract.findMany({
         where: { createdBy: user.id },
         orderBy: { createdAt: 'desc' },
@@ -76,7 +61,6 @@ export async function GET(request: NextRequest) {
         }
       }),
 
-      // Recent cases
       prisma.case.findMany({
         where: { createdBy: user.id },
         orderBy: { createdAt: 'desc' },
@@ -93,14 +77,13 @@ export async function GET(request: NextRequest) {
         }
       }),
 
-      // Upcoming deadlines
       prisma.compliance.findMany({
         where: {
           createdBy: user.id,
           status: { in: ['PENDING', 'IN_PROGRESS'] },
           dueDate: {
             gte: new Date(),
-            lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Next 30 days
+            lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
           }
         },
         orderBy: { dueDate: 'asc' },
@@ -115,7 +98,6 @@ export async function GET(request: NextRequest) {
         }
       }),
 
-      // Recent activities
       prisma.activity.findMany({
         where: { userId: user.id },
         orderBy: { createdAt: 'desc' },
@@ -134,7 +116,6 @@ export async function GET(request: NextRequest) {
       })
     ])
 
-    // Return dashboard data
     return NextResponse.json({
       stats,
       recentContracts,
@@ -148,7 +129,9 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('Error fetching dashboard data:', error)
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return createUnauthorizedResponse()
+    }
     return NextResponse.json(
       { error: 'Failed to fetch dashboard data' },
       { status: 500 }

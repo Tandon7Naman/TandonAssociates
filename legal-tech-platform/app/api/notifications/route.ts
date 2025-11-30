@@ -1,59 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { getAuthenticatedUser, createUnauthorizedResponse } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const user = await getAuthenticatedUser()
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+    const upcomingDeadlines = await prisma.compliance.findMany({
+      where: {
+        createdBy: user.id,
+        status: { in: ['PENDING', 'IN_PROGRESS'] },
+        dueDate: {
+          gte: new Date(),
+          lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      },
+      orderBy: { dueDate: 'asc' },
+      take: 10,
     })
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
+    const expiringContracts = await prisma.contract.findMany({
+      where: {
+        createdBy: user.id,
+        status: 'ACTIVE',
+        endDate: {
+          gte: new Date(),
+          lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+      },
+      orderBy: { endDate: 'asc' },
+      take: 10,
+    })
 
-    // Notification model doesn't exist in schema, return empty for now
+    const upcomingHearings = await prisma.case.findMany({
+      where: {
+        createdBy: user.id,
+        status: { in: ['OPEN', 'IN_PROGRESS', 'HEARING_SCHEDULED'] },
+        nextDate: {
+          gte: new Date(),
+          lte: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        },
+      },
+      orderBy: { nextDate: 'asc' },
+      take: 10,
+    })
+
     return NextResponse.json({
-      notifications: [],
-      unreadCount: 0
+      upcomingDeadlines,
+      expiringContracts,
+      upcomingHearings,
     })
   } catch (error) {
-    console.error('Error fetching notifications:', error)
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return createUnauthorizedResponse()
+    }
     return NextResponse.json(
       { error: 'Failed to fetch notifications' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function PUT(request: NextRequest) {
-  try {
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    // Notification model doesn't exist in schema
-    return NextResponse.json({ message: 'Notifications not implemented' })
-  } catch (error) {
-    console.error('Error updating notifications:', error)
-    return NextResponse.json(
-      { error: 'Failed to update notifications' },
       { status: 500 }
     )
   }

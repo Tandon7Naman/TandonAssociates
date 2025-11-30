@@ -1,34 +1,40 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { registerSchema } from '@/lib/validations'
+import { ZodError } from 'zod'
+import { rateLimit } from '@/lib/rate-limit'
+import { logSecurityEvent, SecurityEvent } from '@/lib/security-logger'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { name, email, password } = await req.json()
-
-    if (!email || !password) {
+    if (!rateLimit(req, 3, 60000)) {
+      logSecurityEvent(SecurityEvent.RATE_LIMIT_EXCEEDED, {
+        ip: req.ip,
+        resource: '/api/register',
+      })
       return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
+        { error: 'Too many requests' },
+        { status: 429 }
       )
     }
 
-    // Check if user already exists
+    const body = await req.json()
+    const { name, email, password } = registerSchema.parse(body)
+
     const existingUser = await prisma.user.findUnique({
       where: { email },
     })
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User with this email already exists' },
+        { error: 'User already exists' },
         { status: 400 }
       )
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create user
     const user = await prisma.user.create({
       data: {
         name,
@@ -45,14 +51,24 @@ export async function POST(req: Request) {
       },
     })
 
+    logSecurityEvent(SecurityEvent.LOGIN_SUCCESS, {
+      userId: user.id,
+      resource: '/api/register',
+    })
+
     return NextResponse.json(
       { user, message: 'User created successfully' },
       { status: 201 }
     )
   } catch (error) {
-    console.error('[REGISTER_ERROR]', error)
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid input' },
+        { status: 400 }
+      )
+    }
     return NextResponse.json(
-      { error: 'Something went wrong' },
+      { error: 'Registration failed' },
       { status: 500 }
     )
   }

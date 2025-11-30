@@ -1,58 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { getAuthenticatedUser, createUnauthorizedResponse } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const user = await getAuthenticatedUser()
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
+    const searchParams = request.nextUrl.searchParams
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
+    const offset = Math.max(parseInt(searchParams.get('offset') || '0'), 0)
 
     const activities = await prisma.activity.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
-      take: 100,
+      take: limit,
+      skip: offset,
       include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        },
-        contract: {
-          select: {
-            id: true,
-            title: true
-          }
-        },
-        case: {
-          select: {
-            id: true,
-            title: true
-          }
-        },
-        compliance: {
-          select: {
-            id: true,
-            title: true
-          }
-        }
-      }
+        contract: { select: { title: true } },
+        case: { select: { title: true } },
+        compliance: { select: { title: true } },
+      },
     })
 
-    return NextResponse.json(activities)
+    const total = await prisma.activity.count({
+      where: { userId: user.id },
+    })
+
+    return NextResponse.json({
+      activities,
+      total,
+      limit,
+      offset,
+    })
   } catch (error) {
-    console.error('Error fetching activities:', error)
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return createUnauthorizedResponse()
+    }
     return NextResponse.json(
       { error: 'Failed to fetch activities' },
       { status: 500 }
