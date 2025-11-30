@@ -3,22 +3,9 @@ import prisma from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { registerSchema } from '@/lib/validations'
 import { ZodError } from 'zod'
-import { rateLimit } from '@/lib/rate-limit'
-import { logSecurityEvent, SecurityEvent } from '@/lib/security-logger'
 
 export async function POST(req: NextRequest) {
   try {
-    if (!rateLimit(req, 3, 60000)) {
-      logSecurityEvent(SecurityEvent.RATE_LIMIT_EXCEEDED, {
-        ip: req.ip,
-        resource: '/api/register',
-      })
-      return NextResponse.json(
-        { error: 'Too many requests' },
-        { status: 429 }
-      )
-    }
-
     const body = await req.json()
     const { name, email, password } = registerSchema.parse(body)
 
@@ -51,11 +38,6 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    logSecurityEvent(SecurityEvent.LOGIN_SUCCESS, {
-      userId: user.id,
-      resource: '/api/register',
-    })
-
     return NextResponse.json(
       { user, message: 'User created successfully' },
       { status: 201 }
@@ -67,6 +49,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       )
     }
+    console.error('Registration error:', error)
     return NextResponse.json(
       { error: 'Registration failed' },
       { status: 500 }
