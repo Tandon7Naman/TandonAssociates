@@ -1,0 +1,103 @@
+================================================================================
+                    🚀 QUICK SUPABASE SETUP REFERENCE
+================================================================================
+
+STEP 1: CREATE SUPABASE ACCOUNT
+────────────────────────────────────────────────────────────────────────────────
+1. Go to https://supabase.com
+2. Click "Start your project"
+3. Sign up with email or GitHub
+4. Verify email
+
+STEP 2: CREATE PROJECT
+────────────────────────────────────────────────────────────────────────────────
+1. Click "New project"
+2. Project name: legal-tech-db
+3. Create strong password (save it!)
+4. Choose region closest to you
+5. Click "Create new project"
+6. Wait 2-3 minutes
+
+STEP 3: GET CONNECTION STRING
+────────────────────────────────────────────────────────────────────────────────
+1. Click "Settings" (bottom left)
+2. Click "Database"
+3. Find "Connection string"
+4. Click "URI" tab
+5. Copy the connection string
+
+Example:
+postgresql://postgres:MyPassword123@db.supabase.co:5432/postgres
+
+STEP 4: UPDATE .env.local
+────────────────────────────────────────────────────────────────────────────────
+File: N:\Website\legal-tech-platform\.env.local
+
+Replace:
+DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+
+With:
+DATABASE_URL="postgresql://postgres:[YOUR_PASSWORD]@[YOUR_HOST]:5432/postgres"
+
+Save file!
+
+STEP 5: RUN MIGRATIONS
+────────────────────────────────────────────────────────────────────────────────
+Open terminal and run:
+
+cd N:\Website\legal-tech-platform
+
+npx prisma generate
+
+npx prisma migrate deploy
+
+STEP 6: PUSH TO GITHUB
+────────────────────────────────────────────────────────────────────────────────
+git add .env.local
+git commit -m "🔧 Update database connection to Supabase"
+git push origin main
+
+Wait 2-3 minutes for Vercel to redeploy
+
+STEP 7: TEST REGISTRATION
+────────────────────────────────────────────────────────────────────────────────
+1. Go to: https://tandon-associates-bmtjyzkwi-tandon7namans-projects.vercel.app/register
+2. Fill form:
+   Name:     Test User
+   Email:    test@tandonassociates.com
+   Password: Test@1234
+3. Click "Sign Up"
+4. Should succeed!
+
+STEP 8: LOGIN
+────────────────────────────────────────────────────────────────────────────────
+1. Go to: https://tandon-associates-bmtjyzkwi-tandon7namans-projects.vercel.app/login
+2. Enter:
+   Email:    test@tandonassociates.com
+   Password: Test@1234
+3. Click "Sign In"
+4. Dashboard loads - you're in! 🎉
+
+================================================================================
+                            IMPORTANT NOTES
+================================================================================
+
+⚠️  Save your Supabase password - you'll need it!
+⚠️  Don't commit .env.local to GitHub (it's in .gitignore)
+⚠️  Wait 2-3 minutes after each step
+⚠️  Check Vercel deployment status after pushing
+
+================================================================================
+                              LINKS
+================================================================================
+
+Supabase:     https://supabase.com
+Registration: https://tandon-associates-bmtjyzkwi-tandon7namans-projects.vercel.app/register
+Login:        https://tandon-associates-bmtjyzkwi-tandon7namans-projects.vercel.app/login
+GitHub:       https://github.com/Tandon7Naman/TandonAssociates
+
+================================================================================
+
+Ready? Start with Step 1! 🚀
+
+================================================================================
