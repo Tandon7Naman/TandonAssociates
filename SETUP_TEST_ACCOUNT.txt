@@ -1,0 +1,78 @@
+================================================================================
+                    🧪 SETUP TEST ACCOUNT - STEP BY STEP
+================================================================================
+
+STEP 1: GO TO REGISTRATION PAGE
+────────────────────────────────────────────────────────────────────────────────
+URL: https://tandon-associates-bmtjyzkwi-tandon7namans-projects.vercel.app/register
+
+STEP 2: FILL IN THE REGISTRATION FORM
+────────────────────────────────────────────────────────────────────────────────
+Name:     Test User
+Email:    test@tandonassociates.com
+Password: Test@1234
+
+STEP 3: CLICK "SIGN UP" BUTTON
+────────────────────────────────────────────────────────────────────────────────
+Wait for the page to process
+
+STEP 4: YOU'LL BE REDIRECTED TO LOGIN PAGE
+────────────────────────────────────────────────────────────────────────────────
+This is normal - registration is complete
+
+STEP 5: LOGIN WITH YOUR CREDENTIALS
+────────────────────────────────────────────────────────────────────────────────
+Email:    test@tandonassociates.com
+Password: Test@1234
+
+STEP 6: CLICK "SIGN IN"
+────────────────────────────────────────────────────────────────────────────────
+Dashboard will load
+
+STEP 7: YOU'RE IN! 🎉
+────────────────────────────────────────────────────────────────────────────────
+Start testing the platform
+
+================================================================================
+                            QUICK LINKS
+================================================================================
+
+Registration: https://tandon-associates-bmtjyzkwi-tandon7namans-projects.vercel.app/register
+Login:        https://tandon-associates-bmtjyzkwi-tandon7namans-projects.vercel.app/login
+Dashboard:    https://tandon-associates-bmtjyzkwi-tandon7namans-projects.vercel.app/dashboard
+
+================================================================================
+                          CREDENTIALS SUMMARY
+================================================================================
+
+Name:     Test User
+Email:    test@tandonassociates.com
+Password: Test@1234
+
+================================================================================
+                            TROUBLESHOOTING
+================================================================================
+
+Problem: "User already exists"
+Solution: Go to login page and login with the credentials
+
+Problem: "Invalid input"
+Solution: Check all fields are filled correctly
+          - Name: Test User
+          - Email: test@tandonassociates.com
+          - Password: Test@1234
+
+Problem: "Registration failed"
+Solution: Check internet connection and try again
+
+Problem: "Invalid email or password" (at login)
+Solution: Make sure you registered first
+          Go to registration page and complete registration
+
+================================================================================
+
+Ready? Start with registration! 🚀
+
+https://tandon-associates-bmtjyzkwi-tandon7namans-projects.vercel.app/register
+
+================================================================================

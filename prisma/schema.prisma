@@ -1,0 +1,1224 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String
+  image         String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  contracts     Contract[]
+  cases         Case[]
+  compliances   Compliance[]
+  comments      Comment[]
+  activities    Activity[]
+
+  // NEW relations
+  studentVerification StudentVerification?
+  aiProfile          UserAIProfile?
+  aiInteractions     AIInteraction[]
+  workPatterns       UserWorkPattern[]
+  dashboardLayout    UserDashboardLayout?
+  organizations      OrganizationUser[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Contract Management
+model Contract {
+  id              String         @id @default(cuid())
+  title           String
+  description     String?
+  type            ContractType
+  status          ContractStatus @default(DRAFT)
+  stage           ContractStage  @default(INITIATION)
+  priority        Priority       @default(MEDIUM)
+  
+  // Parties
+  partyA          String         // Our organization
+  partyB          String         // Other party
+  
+  // Dates
+  startDate       DateTime?
+  endDate         DateTime?
+  executionDate   DateTime?
+  renewalDate     DateTime?
+  expiryDate      DateTime?
+  
+  // Financial
+  value           Float?
+  currency        String         @default("USD")
+  
+  // Risk & Compliance
+  riskScore       Int?           // 0-100
+  complianceScore Int?           // 0-100
+  
+  // AI Analysis
+  aiSummary       String?
+  keyTerms        Json?          // Key terms extracted by AI
+  obligations     Json?          // Obligations identified by AI
+  redFlags        Json?          // Potential issues flagged by AI
+  
+  // Metadata
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdBy       String
+  assignedTo      String?
+  
+  // Relations
+  user            User           @relation(fields: [createdBy], references: [id])
+  documents       Document[]
+  clauses         Clause[]
+  comments        Comment[]
+  activities      Activity[]
+  workflows       Workflow[]
+
+  @@map("contracts")
+}
+
+model Clause {
+  id          String   @id @default(cuid())
+  contractId  String
+  title       String
+  content     String
+  type        String   // e.g., "Payment", "Termination", "Liability"
+  riskLevel   String?  // LOW, MEDIUM, HIGH
+  aiAnalysis  String?
+  position    Int      // Order in contract
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("clauses")
+}
+
+// Case Management
+model Case {
+  id              String       @id @default(cuid())
+  caseNumber      String       @unique
+  title           String
+  description     String?
+  type            CaseType
+  status          CaseStatus   @default(OPEN)
+  priority        Priority     @default(MEDIUM)
+  
+  // Court Details
+  court           String?
+  judge           String?
+  courtLocation   String?
+  
+  // Parties
+  plaintiff       String?
+  defendant       String?
+  
+  // Dates
+  filingDate      DateTime?
+  hearingDate     DateTime?
+  nextDate        DateTime?
+  closedDate      DateTime?
+  
+  // Outcome
+  outcome         String?
+  verdict         String?
+  
+  // AI Analysis
+  aiSummary       String?
+  precedents      Json?        // Related case precedents
+  legalPoints     Json?        // Key legal points
+  
+  // Metadata
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  createdBy       String
+  assignedTo      String?
+  
+  // Relations
+  user            User         @relation(fields: [createdBy], references: [id])
+  documents       Document[]
+  proceedings     Proceeding[]
+  comments        Comment[]
+  activities      Activity[]
+
+  @@map("cases")
+}
+
+model Proceeding {
+  id          String   @id @default(cuid())
+  caseId      String
+  date        DateTime
+  type        String   // Hearing, Filing, Order
+  description String
+  outcome     String?
+  nextDate    DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  
+  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("proceedings")
+}
+
+// Compliance Management
+model Compliance {
+  id              String           @id @default(cuid())
+  title           String
+  description     String?
+  type            ComplianceType
+  status          ComplianceStatus @default(PENDING)
+  priority        Priority         @default(MEDIUM)
+  
+  // Regulatory
+  regulation      String           // Name of regulation (GDPR, SOX, etc.)
+  authority       String?          // Regulatory authority
+  jurisdiction    String?
+  
+  // Dates
+  dueDate         DateTime?
+  completedDate   DateTime?
+  reviewDate      DateTime?
+  
+  // Assessment
+  riskLevel       String?          // LOW, MEDIUM, HIGH, CRITICAL
+  complianceScore Int?             // 0-100
+  
+  // Actions
+  requirements    Json?            // Compliance requirements
+  controls        Json?            // Control measures
+  evidence        Json?            // Evidence of compliance
+  
+  // Metadata
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  createdBy       String
+  assignedTo      String?
+  
+  // Relations
+  user            User             @relation(fields: [createdBy], references: [id])
+  documents       Document[]
+  audits          Audit[]
+  comments        Comment[]
+  activities      Activity[]
+
+  @@map("compliances")
+}
+
+model Audit {
+  id            String     @id @default(cuid())
+  complianceId  String
+  title         String
+  type          String     // Internal, External
+  status        String     // Planned, In Progress, Completed
+  auditor       String?
+  findings      Json?
+  recommendations Json?
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  compliance    Compliance @relation(fields: [complianceId], references: [id], onDelete: Cascade)
+
+  @@map("audits")
+}
+
+// Document Management
+model Document {
+  id           String    @id @default(cuid())
+  name         String
+  type         String    // PDF, DOC, DOCX, etc.
+  size         Int       // in bytes
+  url          String    // Storage URL
+  mimeType     String
+  
+  // AI Processing
+  extractedText String?  // Full text extracted from document
+  aiSummary     String?  // AI-generated summary
+  aiInsights    Json?    // AI-extracted insights
+  
+  // Relationships
+  contractId   String?
+  caseId       String?
+  complianceId String?
+  
+  // Metadata
+  uploadedAt   DateTime  @default(now())
+  uploadedBy   String
+  
+  // Relations
+  contract     Contract?   @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  case         Case?       @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  compliance   Compliance? @relation(fields: [complianceId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+// Workflow Management
+model Workflow {
+  id          String   @id @default(cuid())
+  contractId  String
+  stage       String   // Current workflow stage
+  status      String   // Pending, Approved, Rejected
+  approver    String?
+  approvedAt  DateTime?
+  comments    String?
+  createdAt   DateTime @default(now())
+  
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("workflows")
+}
+
+// Comments & Communication
+model Comment {
+  id           String      @id @default(cuid())
+  content      String
+  contractId   String?
+  caseId       String?
+  complianceId String?
+  createdAt    DateTime    @default(now())
+  createdBy    String
+  
+  user         User        @relation(fields: [createdBy], references: [id])
+  contract     Contract?   @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  case         Case?       @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  compliance   Compliance? @relation(fields: [complianceId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+// Activity Log
+model Activity {
+  id           String      @id @default(cuid())
+  action       String      // Created, Updated, Deleted, etc.
+  entity       String      // Contract, Case, Compliance
+  entityId     String
+  description  String
+  metadata     Json?
+  createdAt    DateTime    @default(now())
+  userId       String
+  
+  user         User        @relation(fields: [userId], references: [id])
+  contract     Contract?   @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "activity_contract_fk")
+  case         Case?       @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "activity_case_fk")
+  compliance   Compliance? @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "activity_compliance_fk")
+
+  @@map("activities")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  USER
+  STUDENT        // NEW
+  VIEWER
+}
+
+enum ContractType {
+  NDA
+  SERVICE_AGREEMENT
+  EMPLOYMENT
+  VENDOR
+  PARTNERSHIP
+  LEASE
+  PROCUREMENT
+  OTHER
+}
+
+enum ContractStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  EXECUTED
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum ContractStage {
+  INITIATION
+  CREATION
+  INTERNAL_REVIEW
+  EXTERNAL_REVIEW
+  APPROVAL
+  EXECUTION
+  ANALYTICS
+  RENEWAL
+  EXPIRY
+}
+
+enum CaseType {
+  CIVIL
+  CRIMINAL
+  CORPORATE
+  LABOR
+  INTELLECTUAL_PROPERTY
+  TAX
+  REGULATORY
+  OTHER
+}
+
+enum CaseStatus {
+  OPEN
+  IN_PROGRESS
+  HEARING_SCHEDULED
+  AWAITING_JUDGMENT
+  CLOSED
+  ARCHIVED
+}
+
+enum ComplianceType {
+  REGULATORY
+  STATUTORY
+  CONTRACTUAL
+  INTERNAL_POLICY
+  INDUSTRY_STANDARD
+}
+
+enum ComplianceStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLIANT
+  NON_COMPLIANT
+  UNDER_REVIEW
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// ============================================
+// INDIAN LEGAL SYSTEM SPECIFIC MODELS
+// ============================================
+
+// Indian Court System Integration
+model IndianCourt {
+  id            String   @id @default(cuid())
+  courtName     String   // e.g., "Supreme Court of India", "Delhi High Court"
+  courtType     CourtType
+  state         String?  // For High Courts and District Courts
+  district      String?  // For District Courts
+  jurisdiction  String?
+  address       String?
+  email         String?
+  phone         String?
+  createdAt     DateTime @default(now())
+  
+  cases         IndianCourtCase[]
+
+  @@map("indian_courts")
+}
+
+model IndianCourtCase {
+  id                String       @id @default(cuid())
+  caseId            String       // Reference to main Case model
+  cnrNumber         String?      @unique  // Case Number Record - unique identifier in eCourts
+  filingNumber      String?      // Filing number
+  registrationNumber String?     // Registration number after filing
+  caseType          String       // Civil, Criminal, Writ, Appeal, etc.
+  caseYear          Int?
+  
+  // Court Details
+  courtId           String
+  court             IndianCourt  @relation(fields: [courtId], references: [id])
+  benchType         String?      // Single, Division, Full Bench
+  judge             String?
+  coramJudges       Json?        // Multiple judges for Division/Full Bench
+  
+  // Parties (Indian format)
+  petitioner        String       // Plaintiff in civil, Complainant in criminal
+  respondent        String       // Defendant
+  advocates         Json?        // List of advocates with enrollment numbers
+  
+  // Status
+  caseStatus        String       // Filed, Admitted, Pending, Disposed, etc.
+  stage             String?      // Pre-trial, Trial, Arguments, Judgment
+  
+  // Dates
+  filingDate        DateTime?
+  firstHearingDate  DateTime?
+  nextHearingDate   DateTime?
+  disposalDate      DateTime?
+  
+  // eCourts Integration
+  eCourtsCaseNo     String?      // From eCourts API
+  lastSyncedAt      DateTime?    // Last time synced with eCourts
+  
+  // Cause List
+  causeLists        CauseList[]
+  
+  // Proceedings
+  indianProceedings IndianCourtProceeding[]
+  
+  // Orders & Judgments
+  orders            CourtOrder[]
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("indian_court_cases")
+}
+
+model CauseList {
+  id                String          @id @default(cuid())
+  indianCourtCaseId String
+  indianCourtCase   IndianCourtCase @relation(fields: [indianCourtCaseId], references: [id], onDelete: Cascade)
+  
+  hearingDate       DateTime
+  courtRoom         String?
+  benchNumber       String?
+  serialNumber      Int?            // Order in causelist
+  purpose           String?         // Purpose of hearing
+  caseStatus        String?
+  remarks           String?
+  
+  fetchedFrom       String?         // Source: eCourts, Manual, etc.
+  createdAt         DateTime        @default(now())
+
+  @@map("cause_lists")
+}
+
+model IndianCourtProceeding {
+  id                String          @id @default(cuid())
+  indianCourtCaseId String
+  indianCourtCase   IndianCourtCase @relation(fields: [indianCourtCaseId], references: [id], onDelete: Cascade)
+  
+  date              DateTime
+  proceedingType    String          // Hearing, Order, Judgment, etc.
+  description       String
+  judge             String?
+  advocates         Json?           // Advocates present
+  outcome           String?
+  nextDate          DateTime?
+  remarks           String?
+  
+  // Indian specific
+  orderType         String?         // Interim, Final, etc.
+  vakalatnama       Boolean         @default(false) // Whether vakalatnama was filed
+  
+  createdAt         DateTime        @default(now())
+
+  @@map("indian_court_proceedings")
+}
+
+model CourtOrder {
+  id                String          @id @default(cuid())
+  indianCourtCaseId String
+  indianCourtCase   IndianCourtCase @relation(fields: [indianCourtCaseId], references: [id], onDelete: Cascade)
+  
+  orderDate         DateTime
+  orderType         String          // Interim, Final, Judgment, etc.
+  passedBy          String          // Judge name
+  orderText         String?         // Full order text
+  summary           String?         // AI-generated summary
+  
+  // Judgment specific
+  isJudgment        Boolean         @default(false)
+  verdict           String?         // For judgment: Allowed, Dismissed, etc.
+  citation          String?         // Legal citation
+  
+  // Document
+  documentUrl       String?
+  
+  createdAt         DateTime        @default(now())
+
+  @@map("court_orders")
+}
+
+// Indian Legal Research & Case Law
+model IndianCaseLaw {
+  id                String   @id @default(cuid())
+  title             String
+  citation          String   // e.g., "AIR 1973 SC 1461", "2015 (10) SCC 1"
+  court             String   // Supreme Court, High Court name
+  date              DateTime
+  
+  // Judges
+  bench             String   // e.g., "3-Judge Bench"
+  judges            Json?    // Array of judge names
+  
+  // Parties
+  appellant         String
+  respondent        String
+  
+  // Content
+  summary           String?
+  headnote          String?
+  judgment          String?  // Full judgment text
+  
+  // Legal Points
+  actsReferred      Json?    // Acts and sections referred
+  casesReferred     Json?    // Case precedents referred
+  legalPrinciples   Json?    // Key legal principles
+  
+  // Classification
+  caseType          String   // Civil, Criminal, Constitutional, etc.
+  subjectMatter     String?  // Contract, Tort, Criminal Law, etc.
+  
+  // Source
+  source            String   // IndianKanoon, SCC, Manual, etc.
+  sourceUrl         String?
+  indianKanoonId    String?  @unique
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("indian_case_laws")
+}
+
+model BareAct {
+  id              String   @id @default(cuid())
+  actName         String   // e.g., "Indian Penal Code, 1860"
+  shortName       String   // e.g., "IPC"
+  actNumber       String?  // e.g., "Act No. 45 of 1860"
+  enactmentDate   DateTime?
+  commencementDate DateTime?
+  
+  // Ministry/Department
+  ministry        String?
+  
+  // Content
+  preamble        String?
+  fullText        String?
+  
+  // Status
+  isActive        Boolean  @default(true)
+  repealed        Boolean  @default(false)
+  repealedBy      String?
+  
+  // Sections
+  sections        ActSection[]
+  
+  // Amendments
+  amendments      Json?    // List of amendments
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("bare_acts")
+}
+
+model ActSection {
+  id              String   @id @default(cuid())
+  bareActId       String
+  bareAct         BareAct  @relation(fields: [bareActId], references: [id], onDelete: Cascade)
+  
+  sectionNumber   String   // e.g., "Section 420", "Article 21"
+  title           String?
+  content         String
+  
+  // Subsections
+  hasSubsections  Boolean  @default(false)
+  subsections     Json?
+  
+  // Penalties (for criminal sections)
+  punishment      String?
+  bailableStatus  String?  // Bailable, Non-bailable, Compoundable
+  cognizable      Boolean?
+  
+  // Case laws
+  importantJudgments Json?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("act_sections")
+}
+
+// Indian Compliance Management
+model IndianCompliance {
+  id              String            @id @default(cuid())
+  complianceId    String            // Reference to main Compliance model
+  
+  // Indian specific
+  regulationType  IndianRegulationType
+  authority       String            // MCA, RBI, SEBI, GST Council, etc.
+  
+  // Act/Regulation
+  applicableLaw   String            // Companies Act 2013, FEMA, etc.
+  section         String?           // Specific section/rule
+  
+  // Statutory Forms
+  formNumber      String?           // e.g., "Form MGT-7", "GSTR-1"
+  formName        String?
+  
+  // Filing Details
+  filingFrequency String?           // Monthly, Quarterly, Annual
+  dueDate         DateTime?
+  filingDate      DateTime?
+  acknowledgement String?           // SRN, ARN, etc.
+  
+  // Penalties
+  penaltyAmount   Float?
+  penaltyPer      String?           // Per day, One-time
+  
+  // Documents
+  documents       Json?
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("indian_compliances")
+}
+
+// Indian Legal Documents
+model IndianLegalDocument {
+  id              String              @id @default(cuid())
+  documentType    IndianDocumentType
+  title           String
+  
+  // Parties
+  parties         Json                // Detailed party information
+  
+  // Court specific (for court documents)
+  courtName       String?
+  caseNumber      String?
+  cnrNumber       String?
+  
+  // Stamp Duty
+  stampDuty       Float?
+  stampDutyState  String?             // State where stamped
+  stampDate       DateTime?
+  
+  // Notarization
+  isNotarized     Boolean             @default(false)
+  notaryName      String?
+  notaryDate      DateTime?
+  notaryPlace     String?
+  
+  // Content
+  content         String?             // Full document text
+  template        String?             // Template ID used
+  
+  // Status
+  status          String              // Draft, Final, Filed, etc.
+  
+  // Relations
+  caseId          String?
+  contractId      String?
+  
+  // Document file
+  fileUrl         String?
+  fileName        String?
+  
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("indian_legal_documents")
+}
+
+// Advocate/Lawyer Management
+model Advocate {
+  id                String   @id @default(cuid())
+  name              String
+  enrollmentNumber  String   @unique  // Bar Council enrollment number
+  barCouncil        String   // State Bar Council
+  enrollmentDate    DateTime?
+  
+  // Contact
+  email             String?
+  phone             String?
+  address           String?
+  
+  // Practice
+  practiceAreas     Json?    // Areas of specialization
+  courtsEnrolled    Json?    // Courts where enrolled to practice
+  
+  // Credentials
+  licenseStatus     String   @default("ACTIVE")  // ACTIVE, SUSPENDED, etc.
+  aorStatus         Boolean  @default(false)     // Advocate on Record (Supreme Court)
+  
+  // Cases
+  cases             Json?    // Cases handled
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("advocates")
+}
+
+// Legal Templates (Indian specific)
+model LegalTemplate {
+  id              String              @id @default(cuid())
+  name            String
+  category        IndianDocumentType
+  description     String?
+  
+  // Template content
+  template        String              // Template with placeholders
+  variables       Json                // List of variables to fill
+  
+  // Stamp duty calculation
+  requiresStampDuty Boolean           @default(false)
+  stampDutyFormula  String?           // Formula for calculating stamp duty
+  
+  // States applicable
+  applicableStates Json?              // Empty = All India
+  
+  // Language
+  language        String              @default("ENGLISH")
+  bilingualContent String?            // Hindi or regional language version
+  
+  // Usage
+  usageCount      Int                 @default(0)
+  
+  // Status
+  isActive        Boolean             @default(true)
+  
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("legal_templates")
+}
+
+// ============================================
+// NEW MODELS FROM GUIDE
+// ============================================
+
+model StudentVerification {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id])
+
+  // Institution Details
+  institutionName   String
+  institutionEmail  String   @unique  // Must be .edu or verified college domain
+  enrollmentNumber  String
+  course            String   // LLB, LLM, BA LLB, etc.
+  yearOfStudy       Int
+  expectedGraduation DateTime
+
+  // Verification
+  verificationStatus String  @default("PENDING") // PENDING, VERIFIED, EXPIRED
+  idCardUrl         String?  // Student ID upload
+  bonafideUrl       String?  // Bonafide certificate
+  verifiedAt        DateTime?
+  expiresAt         DateTime  // Auto-expires after graduation
+
+  // Usage tracking
+  lastAccessedAt    DateTime @default(now())
+  usageStats        Json?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("student_verifications")
+}
+
+model Organization {
+  id              String   @id @default(cuid())
+  name            String
+  type            OrgType  // LAW_FIRM_SMALL, LAW_FIRM_LARGE, CORPORATE, GOVERNMENT
+
+  // Contact
+  email           String   @unique
+  phone           String?
+  address         String?
+
+  // Legal Details
+  gstin           String?
+  pan             String?
+  cinNumber       String?  // For companies
+
+  // Agreement
+  agreementType   AgreementType
+  agreementUrl    String?  // Signed agreement PDF
+  agreementDate   DateTime?
+  validUntil      DateTime?
+
+  // Billing
+  billingCycle    String   // MONTHLY, QUARTERLY, ANNUAL
+  seatsLicensed   Int      // Number of user licenses
+  pricePerSeat    Float
+  totalAmount     Float
+
+  // Usage
+  currentSeats    Int      @default(0)
+  features        Json     // Enabled features
+
+  // Status
+  status          String   @default("ACTIVE") // ACTIVE, SUSPENDED, EXPIRED
+
+  // Relations
+  users           OrganizationUser[]
+  subscriptions   Subscription[]
+  invoices        Invoice[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("organizations")
+}
+
+model OrganizationUser {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  userId          String
+  user            User         @relation(fields: [userId], references: [id])
+
+  role            OrgUserRole  // ADMIN, MEMBER, VIEWER
+  permissions     Json?        // Custom permissions
+
+  addedAt         DateTime     @default(now())
+
+  @@unique([organizationId, userId])
+  @@map("organization_users")
+}
+
+model Subscription {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  planName        String
+  planType        PlanType     // STARTER, PROFESSIONAL, ENTERPRISE, CUSTOM
+
+  // Pricing
+  basePrice       Float
+  seatsIncluded   Int
+  pricePerExtraSeat Float
+
+  // Billing
+  startDate       DateTime
+  endDate         DateTime
+  billingCycle    String
+  autoRenew       Boolean      @default(true)
+
+  // Payment
+  paymentStatus   String       // ACTIVE, PAST_DUE, CANCELLED
+  paymentMethod   String?      // UPI, CARD, NEFT, etc.
+
+  // Features
+  features        Json         // Feature flags
+  limits          Json         // Usage limits
+
+  // Invoices
+  invoices        Invoice[]
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  subscriptionId  String
+  subscription    Subscription @relation(fields: [subscriptionId], references: [id])
+
+  invoiceNumber   String       @unique
+  invoiceDate     DateTime
+  dueDate         DateTime
+
+  // Amounts
+  subtotal        Float
+  gst             Float        // 18% GST
+  total           Float
+
+  // Items
+  items           Json         // Line items
+
+  // Payment
+  paymentStatus   String       // DRAFT, SENT, PAID, OVERDUE, CANCELLED
+  paidAt          DateTime?
+  paymentReference String?
+
+  // Documents
+  pdfUrl          String?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("invoices")
+}
+
+model UserDashboardLayout {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+
+  // Layout configuration
+  layout      Json     // Grid layout positions
+  widgets     Json     // Enabled widgets & their config
+  theme       Json?    // Custom theme settings
+
+  // Presets
+  isDefault   Boolean  @default(false)
+  presetName  String?  // "Lawyer", "Student", "Corporate", etc.
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("user_dashboard_layouts")
+}
+
+model WidgetLibrary {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   // "Analytics", "Cases", "Documents", "Calendar", etc.
+  description String?
+
+  // Widget configuration
+  component   String   // Component name to render
+  defaultSize Json     // { w: 4, h: 2 }
+  minSize     Json
+  maxSize     Json
+
+  // Permissions
+  requiredRole String? // STUDENT, USER, ADMIN
+  requiredPlan String? // FREE, BASIC, PRO, ENTERPRISE
+
+  // Availability
+  isActive    Boolean  @default(true)
+  isPremium   Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("widget_library")
+}
+
+model UserAIProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+
+  // Learning Data
+  practiceAreas   Json     // Detected practice areas with confidence scores
+  commonQueries   Json     // Frequently asked questions
+  workPatterns    Json     // Work schedule, peak hours, etc.
+  documentTypes   Json     // Frequently used document types
+  caseTypes       Json     // Types of cases handled
+
+  // Preferences learned
+  preferredCitations Json? // Citation formats user prefers
+  writingStyle    Json?    // Detected writing style patterns
+  legalTerms      Json?    // Commonly used legal terms
+
+  // AI Model
+  modelVersion    String   @default("1.0")
+  lastTrainedAt   DateTime?
+  trainingDataSize Int     @default(0)
+
+  // Performance
+  accuracyScore   Float?   // How accurate AI predictions are
+  usefulnessScore Float?   // User feedback on AI suggestions
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("user_ai_profiles")
+}
+
+model AIInteraction {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  // Interaction details
+  type        String   // "QUERY", "DOCUMENT_GENERATION", "CASE_ANALYSIS", etc.
+  input       String   // User's input
+  output      String   // AI's output
+  context     Json?    // Additional context
+
+  // Feedback
+  wasHelpful  Boolean?
+  feedback    String?
+  rating      Int?     // 1-5 stars
+
+  // Learning
+  usedForTraining Boolean @default(false)
+
+  timestamp   DateTime @default(now())
+
+  @@index([userId, timestamp])
+  @@map("ai_interactions")
+}
+
+model UserWorkPattern {
+  id              String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  // Pattern type
+  patternType     String   // "TIME", "WORKFLOW", "DOCUMENT", "SEARCH"
+
+  // Pattern data
+  pattern         Json     // Detected pattern
+  frequency       Int      // How often this pattern occurs
+  confidence      Float    // 0-1 confidence score
+
+  // Context
+  context         Json?
+
+  // Status
+  isActive        Boolean  @default(true)
+  lastDetectedAt  DateTime @default(now())
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, patternType])
+  @@map("user_work_patterns")
+}
+
+// ============================================
+// INDIAN SPECIFIC ENUMS
+// ============================================
+
+enum CourtType {
+  SUPREME_COURT
+  HIGH_COURT
+  DISTRICT_COURT
+  SESSIONS_COURT
+  CIVIL_COURT
+  CRIMINAL_COURT
+  FAMILY_COURT
+  TRIBUNAL
+  CONSUMER_COURT
+  LABOUR_COURT
+  DRT              // Debt Recovery Tribunal
+  NCLT             // National Company Law Tribunal
+  NCLAT            // National Company Law Appellate Tribunal
+  ITAT             // Income Tax Appellate Tribunal
+}
+
+enum IndianRegulationType {
+  COMPANIES_ACT
+  GST
+  INCOME_TAX
+  RBI
+  SEBI
+  FEMA
+  RERA
+  LABOUR_LAW
+  ENVIRONMENTAL
+  CONSUMER_PROTECTION
+  FSSAI
+  DRUG_CONTROL
+  CUSTOMS
+  EXCISE
+  OTHER
+}
+
+enum IndianDocumentType {
+  VAKALATNAMA
+  AFFIDAVIT
+  WRIT_PETITION
+  APPEAL
+  REVISION
+  PETITION
+  APPLICATION
+  REPLY
+  REJOINDER
+  WRITTEN_STATEMENT
+  PLAINT
+  COUNTER_AFFIDAVIT
+  POWER_OF_ATTORNEY
+  AGREEMENT
+  DEED
+  NOTICE
+  RTI_APPLICATION
+  COMPLAINT
+  FIR
+  OTHER
+}
+
+// NEW ENUMS
+
+enum OrgType {
+  LAW_FIRM_SMALL
+  LAW_FIRM_MEDIUM
+  LAW_FIRM_LARGE
+  CORPORATE
+  GOVERNMENT
+  NGO
+  INDIVIDUAL_LAWYER
+}
+
+enum AgreementType {
+  PAY_PER_USE
+  MONTHLY_SUBSCRIPTION
+  ANNUAL_CONTRACT
+  CUSTOM_ENTERPRISE
+}
+
+enum PlanType {
+  STUDENT_FREE
+  INDIVIDUAL_BASIC
+  INDIVIDUAL_PRO
+  FIRM_STARTER
+  FIRM_PROFESSIONAL
+  FIRM_ENTERPRISE
+  CUSTOM
+}
+
+enum OrgUserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  MEMBER
+  VIEWER
+}
