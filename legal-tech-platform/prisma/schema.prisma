@@ -436,3 +436,449 @@ enum Priority {
   HIGH
   CRITICAL
 }
+
+// ============================================
+// INDIAN LEGAL SYSTEM SPECIFIC MODELS
+// ============================================
+
+// Indian Court System Integration
+model IndianCourt {
+  id            String   @id @default(cuid())
+  courtName     String   // e.g., "Supreme Court of India", "Delhi High Court"
+  courtType     CourtType
+  state         String?  // For High Courts and District Courts
+  district      String?  // For District Courts
+  jurisdiction  String?
+  address       String?
+  email         String?
+  phone         String?
+  createdAt     DateTime @default(now())
+  
+  cases         IndianCourtCase[]
+
+  @@map("indian_courts")
+}
+
+model IndianCourtCase {
+  id                String       @id @default(cuid())
+  caseId            String       // Reference to main Case model
+  cnrNumber         String?      @unique  // Case Number Record - unique identifier in eCourts
+  filingNumber      String?      // Filing number
+  registrationNumber String?     // Registration number after filing
+  caseType          String       // Civil, Criminal, Writ, Appeal, etc.
+  caseYear          Int?
+  
+  // Court Details
+  courtId           String
+  court             IndianCourt  @relation(fields: [courtId], references: [id])
+  benchType         String?      // Single, Division, Full Bench
+  judge             String?
+  coramJudges       Json?        // Multiple judges for Division/Full Bench
+  
+  // Parties (Indian format)
+  petitioner        String       // Plaintiff in civil, Complainant in criminal
+  respondent        String       // Defendant
+  advocates         Json?        // List of advocates with enrollment numbers
+  
+  // Status
+  caseStatus        String       // Filed, Admitted, Pending, Disposed, etc.
+  stage             String?      // Pre-trial, Trial, Arguments, Judgment
+  
+  // Dates
+  filingDate        DateTime?
+  firstHearingDate  DateTime?
+  nextHearingDate   DateTime?
+  disposalDate      DateTime?
+  
+  // eCourts Integration
+  eCourtsCaseNo     String?      // From eCourts API
+  lastSyncedAt      DateTime?    // Last time synced with eCourts
+  
+  // Cause List
+  causeLists        CauseList[]
+  
+  // Proceedings
+  indianProceedings IndianCourtProceeding[]
+  
+  // Orders & Judgments
+  orders            CourtOrder[]
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("indian_court_cases")
+}
+
+model CauseList {
+  id                String          @id @default(cuid())
+  indianCourtCaseId String
+  indianCourtCase   IndianCourtCase @relation(fields: [indianCourtCaseId], references: [id], onDelete: Cascade)
+  
+  hearingDate       DateTime
+  courtRoom         String?
+  benchNumber       String?
+  serialNumber      Int?            // Order in causelist
+  purpose           String?         // Purpose of hearing
+  caseStatus        String?
+  remarks           String?
+  
+  fetchedFrom       String?         // Source: eCourts, Manual, etc.
+  createdAt         DateTime        @default(now())
+
+  @@map("cause_lists")
+}
+
+model IndianCourtProceeding {
+  id                String          @id @default(cuid())
+  indianCourtCaseId String
+  indianCourtCase   IndianCourtCase @relation(fields: [indianCourtCaseId], references: [id], onDelete: Cascade)
+  
+  date              DateTime
+  proceedingType    String          // Hearing, Order, Judgment, etc.
+  description       String
+  judge             String?
+  advocates         Json?           // Advocates present
+  outcome           String?
+  nextDate          DateTime?
+  remarks           String?
+  
+  // Indian specific
+  orderType         String?         // Interim, Final, etc.
+  vakalatnama       Boolean         @default(false) // Whether vakalatnama was filed
+  
+  createdAt         DateTime        @default(now())
+
+  @@map("indian_court_proceedings")
+}
+
+model CourtOrder {
+  id                String          @id @default(cuid())
+  indianCourtCaseId String
+  indianCourtCase   IndianCourtCase @relation(fields: [indianCourtCaseId], references: [id], onDelete: Cascade)
+  
+  orderDate         DateTime
+  orderType         String          // Interim, Final, Judgment, etc.
+  passedBy          String          // Judge name
+  orderText         String?         // Full order text
+  summary           String?         // AI-generated summary
+  
+  // Judgment specific
+  isJudgment        Boolean         @default(false)
+  verdict           String?         // For judgment: Allowed, Dismissed, etc.
+  citation          String?         // Legal citation
+  
+  // Document
+  documentUrl       String?
+  
+  createdAt         DateTime        @default(now())
+
+  @@map("court_orders")
+}
+
+// Indian Legal Research & Case Law
+model IndianCaseLaw {
+  id                String   @id @default(cuid())
+  title             String
+  citation          String   // e.g., "AIR 1973 SC 1461", "2015 (10) SCC 1"
+  court             String   // Supreme Court, High Court name
+  date              DateTime
+  
+  // Judges
+  bench             String   // e.g., "3-Judge Bench"
+  judges            Json?    // Array of judge names
+  
+  // Parties
+  appellant         String
+  respondent        String
+  
+  // Content
+  summary           String?
+  headnote          String?
+  judgment          String?  // Full judgment text
+  
+  // Legal Points
+  actsReferred      Json?    // Acts and sections referred
+  casesReferred     Json?    // Case precedents referred
+  legalPrinciples   Json?    // Key legal principles
+  
+  // Classification
+  caseType          String   // Civil, Criminal, Constitutional, etc.
+  subjectMatter     String?  // Contract, Tort, Criminal Law, etc.
+  
+  // Source
+  source            String   // IndianKanoon, SCC, Manual, etc.
+  sourceUrl         String?
+  indianKanoonId    String?  @unique
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("indian_case_laws")
+}
+
+model BareAct {
+  id              String   @id @default(cuid())
+  actName         String   // e.g., "Indian Penal Code, 1860"
+  shortName       String   // e.g., "IPC"
+  actNumber       String?  // e.g., "Act No. 45 of 1860"
+  enactmentDate   DateTime?
+  commencementDate DateTime?
+  
+  // Ministry/Department
+  ministry        String?
+  
+  // Content
+  preamble        String?
+  fullText        String?
+  
+  // Status
+  isActive        Boolean  @default(true)
+  repealed        Boolean  @default(false)
+  repealedBy      String?
+  
+  // Sections
+  sections        ActSection[]
+  
+  // Amendments
+  amendments      Json?    // List of amendments
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("bare_acts")
+}
+
+model ActSection {
+  id              String   @id @default(cuid())
+  bareActId       String
+  bareAct         BareAct  @relation(fields: [bareActId], references: [id], onDelete: Cascade)
+  
+  sectionNumber   String   // e.g., "Section 420", "Article 21"
+  title           String?
+  content         String
+  
+  // Subsections
+  hasSubsections  Boolean  @default(false)
+  subsections     Json?
+  
+  // Penalties (for criminal sections)
+  punishment      String?
+  bailableStatus  String?  // Bailable, Non-bailable, Compoundable
+  cognizable      Boolean?
+  
+  // Case laws
+  importantJudgments Json?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("act_sections")
+}
+
+// Indian Compliance Management
+model IndianCompliance {
+  id              String            @id @default(cuid())
+  complianceId    String            // Reference to main Compliance model
+  
+  // Indian specific
+  regulationType  IndianRegulationType
+  authority       String            // MCA, RBI, SEBI, GST Council, etc.
+  
+  // Act/Regulation
+  applicableLaw   String            // Companies Act 2013, FEMA, etc.
+  section         String?           // Specific section/rule
+  
+  // Statutory Forms
+  formNumber      String?           // e.g., "Form MGT-7", "GSTR-1"
+  formName        String?
+  
+  // Filing Details
+  filingFrequency String?           // Monthly, Quarterly, Annual
+  dueDate         DateTime?
+  filingDate      DateTime?
+  acknowledgement String?           // SRN, ARN, etc.
+  
+  // Penalties
+  penaltyAmount   Float?
+  penaltyPer      String?           // Per day, One-time
+  
+  // Documents
+  documents       Json?
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("indian_compliances")
+}
+
+// Indian Legal Documents
+model IndianLegalDocument {
+  id              String              @id @default(cuid())
+  documentType    IndianDocumentType
+  title           String
+  
+  // Parties
+  parties         Json                // Detailed party information
+  
+  // Court specific (for court documents)
+  courtName       String?
+  caseNumber      String?
+  cnrNumber       String?
+  
+  // Stamp Duty
+  stampDuty       Float?
+  stampDutyState  String?             // State where stamped
+  stampDate       DateTime?
+  
+  // Notarization
+  isNotarized     Boolean             @default(false)
+  notaryName      String?
+  notaryDate      DateTime?
+  notaryPlace     String?
+  
+  // Content
+  content         String?             // Full document text
+  template        String?             // Template ID used
+  
+  // Status
+  status          String              // Draft, Final, Filed, etc.
+  
+  // Relations
+  caseId          String?
+  contractId      String?
+  
+  // Document file
+  fileUrl         String?
+  fileName        String?
+  
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("indian_legal_documents")
+}
+
+// Advocate/Lawyer Management
+model Advocate {
+  id                String   @id @default(cuid())
+  name              String
+  enrollmentNumber  String   @unique  // Bar Council enrollment number
+  barCouncil        String   // State Bar Council
+  enrollmentDate    DateTime?
+  
+  // Contact
+  email             String?
+  phone             String?
+  address           String?
+  
+  // Practice
+  practiceAreas     Json?    // Areas of specialization
+  courtsEnrolled    Json?    // Courts where enrolled to practice
+  
+  // Credentials
+  licenseStatus     String   @default("ACTIVE")  // ACTIVE, SUSPENDED, etc.
+  aorStatus         Boolean  @default(false)     // Advocate on Record (Supreme Court)
+  
+  // Cases
+  cases             Json?    // Cases handled
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("advocates")
+}
+
+// Legal Templates (Indian specific)
+model LegalTemplate {
+  id              String              @id @default(cuid())
+  name            String
+  category        IndianDocumentType
+  description     String?
+  
+  // Template content
+  template        String              // Template with placeholders
+  variables       Json                // List of variables to fill
+  
+  // Stamp duty calculation
+  requiresStampDuty Boolean           @default(false)
+  stampDutyFormula  String?           // Formula for calculating stamp duty
+  
+  // States applicable
+  applicableStates Json?              // Empty = All India
+  
+  // Language
+  language        String              @default("ENGLISH")
+  bilingualContent String?            // Hindi or regional language version
+  
+  // Usage
+  usageCount      Int                 @default(0)
+  
+  // Status
+  isActive        Boolean             @default(true)
+  
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("legal_templates")
+}
+
+// ============================================
+// INDIAN SPECIFIC ENUMS
+// ============================================
+
+enum CourtType {
+  SUPREME_COURT
+  HIGH_COURT
+  DISTRICT_COURT
+  SESSIONS_COURT
+  CIVIL_COURT
+  CRIMINAL_COURT
+  FAMILY_COURT
+  TRIBUNAL
+  CONSUMER_COURT
+  LABOUR_COURT
+  DRT              // Debt Recovery Tribunal
+  NCLT             // National Company Law Tribunal
+  NCLAT            // National Company Law Appellate Tribunal
+  ITAT             // Income Tax Appellate Tribunal
+}
+
+enum IndianRegulationType {
+  COMPANIES_ACT
+  GST
+  INCOME_TAX
+  RBI
+  SEBI
+  FEMA
+  RERA
+  LABOUR_LAW
+  ENVIRONMENTAL
+  CONSUMER_PROTECTION
+  FSSAI
+  DRUG_CONTROL
+  CUSTOMS
+  EXCISE
+  OTHER
+}
+
+enum IndianDocumentType {
+  VAKALATNAMA
+  AFFIDAVIT
+  WRIT_PETITION
+  APPEAL
+  REVISION
+  PETITION
+  APPLICATION
+  REPLY
+  REJOINDER
+  WRITTEN_STATEMENT
+  PLAINT
+  COUNTER_AFFIDAVIT
+  POWER_OF_ATTORNEY
+  AGREEMENT
+  DEED
+  NOTICE
+  RTI_APPLICATION
+  COMPLAINT
+  FIR
+  OTHER
+}

@@ -15,6 +15,8 @@ import {
   FolderOpen,
   BarChart3,
   FileBarChart,
+  Scale,
+  BookOpen,
 } from 'lucide-react'
 
 const navigation = [
@@ -22,6 +24,7 @@ const navigation = [
   { name: 'Contracts', href: '/dashboard/contracts', icon: FileText },
   { name: 'Cases', href: '/dashboard/cases', icon: Briefcase },
   { name: 'Compliance', href: '/dashboard/compliance', icon: Shield },
+  { name: 'Legal Research', href: '/dashboard/research', icon: Scale, badge: 'NEW' },
   { name: 'Documents', href: '/dashboard/documents', icon: FolderOpen },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   { name: 'Reports', href: '/dashboard/reports', icon: FileBarChart },
