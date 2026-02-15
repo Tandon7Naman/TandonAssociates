@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server'
 const rateLimitMap = new Map()
 
 export function rateLimit(request: NextRequest, limit: number = 5, window: number = 60000) {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+  const ip = (request as any).ip || request.headers.get('x-forwarded-for') || 'unknown'
   const key = `${ip}-${request.nextUrl.pathname}`
   
   const now = Date.now()

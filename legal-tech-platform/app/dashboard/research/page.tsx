@@ -21,7 +21,7 @@ interface SearchResult {
 }
 
 export default function IndianResearchPage() {
-  const [searchQuery, set SearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [citation, setCitation] = useState('')
   const [ipcSection, setIpcSection] = useState('')
   const [cnrNumber, setCnrNumber] = useState('')

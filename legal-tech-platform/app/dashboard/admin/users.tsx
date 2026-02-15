@@ -6,14 +6,14 @@ import { useRouter } from "next/navigation";
 export default function AdminUsersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "USER" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (status === "loading") return;
-    if (!session || session.user.role !== "ADMIN") {
+    if (!session || !session.user || (session.user as any).role !== "ADMIN") {
       router.replace("/dashboard");
     } else {
       fetchUsers();
@@ -33,7 +33,7 @@ export default function AdminUsersPage() {
     setLoading(false);
   }
 
-  async function handleAddUser(e) {
+  async function handleAddUser(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -47,12 +47,12 @@ export default function AdminUsersPage() {
       setForm({ name: "", email: "", password: "", role: "USER" });
       fetchUsers();
     } catch (e) {
-      setError(e.message);
+      setError(e instanceof Error ? e.message : 'Failed to add user');
     }
     setLoading(false);
   }
 
-  async function handleRemoveUser(id) {
+  async function handleRemoveUser(id: string) {
     setLoading(true);
     setError("");
     try {
@@ -60,7 +60,7 @@ export default function AdminUsersPage() {
       if (!res.ok) throw new Error("Failed to remove user");
       fetchUsers();
     } catch (e) {
-      setError(e.message);
+      setError(e instanceof Error ? e.message : 'Failed to remove user');
     }
     setLoading(false);
   }

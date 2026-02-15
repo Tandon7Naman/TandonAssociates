@@ -30,14 +30,14 @@ export interface CauseListEntry {
   serial_no?: number
 }
 
-export class ECourtsSer interface ECourtsCaseHistory {
+export interface ECourtsCaseHistory {
   date?: string
   proceeding?: string
   order?: string
   next_date?: string
 }
 
-vice {
+export class ECourtService {
   /**
    * Search case by CNR (Case Number Record)
    * CNR is a unique 16-digit alphanumeric identifier for each case
