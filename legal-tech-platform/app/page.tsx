@@ -30,7 +30,7 @@ export default function Home() {
             <Link href="/register">
               <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/50 group">
                 <span className="flex items-center gap-2">
-                  Get Started
+                  Learn More
                   <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </span>
               </Button>
@@ -54,19 +54,19 @@ export default function Home() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
               </span>
-              Transform your legal operations with AI
+              Information about legal management software
             </div>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-gray-900 via-blue-800 to-gray-900 bg-clip-text text-transparent">
               Professional Legal Management Platform
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-              Streamline contract management, case tracking, and compliance automation.
-              Save time, reduce risk, and make better decisions with <span className="text-blue-600 font-semibold">AI-powered insights</span>.
+              A platform for contract management, case tracking, and compliance automation.
+              Features AI-assisted analysis, document management, and workflow automation capabilities.
             </p>
             <div className="flex gap-4 justify-center flex-wrap mb-8">
               <Link href="/register">
                 <Button size="lg" className="text-lg px-8 h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30">
-                  Start Free Trial
+                  View Platform
                 </Button>
               </Link>
               <Link href="/login">
@@ -77,22 +77,22 @@ export default function Home() {
             </div>
             <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg className="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                No credit card required
+                Informational access
               </div>
               <div className="flex items-center gap-2">
-                <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg className="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                14-day free trial
+                Demo available
               </div>
               <div className="flex items-center gap-2">
-                <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg className="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Cancel anytime
+                View features
               </div>
             </div>
           </div>
@@ -253,154 +253,107 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Benefits Section */}
+        {/* Platform Capabilities - Factual Description */}
         <section className="py-20">
           <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                  Save Time and Reduce Risk
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  Comprehensive Legal Operations Platform
                 </h2>
-                <p className="text-lg text-muted-foreground mb-6">
-                  Our AI-powered platform helps legal teams work smarter, not harder.
-                  Automate routine tasks and focus on what matters most.
+                <p className="text-lg text-muted-foreground">
+                  A centralized system for managing contracts, cases, and compliance requirements.
+                  Features AI-assisted analysis and workflow automation capabilities.
                 </p>
-                <div className="space-y-4">
-                  <div className="flex gap-4 group hover:translate-x-2 transition-all duration-300">
-                    <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:bg-green-500 group-hover:scale-110">
-                      <span className="text-green-600 font-bold group-hover:text-white transition-colors">✓</span>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-1 group-hover:text-green-600 transition-colors">75% Faster Contract Review</h4>
-                      <p className="text-sm text-muted-foreground">
-                        AI-powered analysis reduces review time from days to hours
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4 group hover:translate-x-2 transition-all duration-300">
-                    <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:bg-green-500 group-hover:scale-110">
-                      <span className="text-green-600 font-bold group-hover:text-white transition-colors">✓</span>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-1 group-hover:text-green-600 transition-colors">90% Risk Reduction</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Catch potential issues before they become problems
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4 group hover:translate-x-2 transition-all duration-300">
-                    <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:bg-green-500 group-hover:scale-110">
-                      <span className="text-green-600 font-bold group-hover:text-white transition-colors">✓</span>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-1 group-hover:text-green-600 transition-colors">100% Compliance Confidence</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Automated compliance tracking ensures nothing falls through the cracks
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
-              <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-8 text-white">
-                <div className="space-y-6">
-                  <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm">Contract Review Time</span>
-                      <span className="font-bold">-75%</span>
-                    </div>
-                    <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-white w-3/4 rounded-full"></div>
-                    </div>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm">Risk Detection Rate</span>
-                      <span className="font-bold">+90%</span>
-                    </div>
-                    <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-white w-[90%] rounded-full"></div>
-                    </div>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm">Compliance Score</span>
-                      <span className="font-bold">98%</span>
-                    </div>
-                    <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-white w-[98%] rounded-full"></div>
-                    </div>
-                  </div>
+              
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-xl border border-blue-100">
+                  <h3 className="text-xl font-semibold mb-4 text-blue-900">Contract Lifecycle Management</h3>
+                  <ul className="space-y-3 text-muted-foreground">
+                    <li className="flex gap-3">
+                      <span className="text-blue-500 mt-1">•</span>
+                      <span>8-stage workflow from initiation to closure</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-blue-500 mt-1">•</span>
+                      <span>AI-assisted clause analysis and risk identification</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-blue-500 mt-1">•</span>
+                      <span>Version control and document management</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-blue-500 mt-1">•</span>
+                      <span>Automated deadline tracking and reminders</span>
+                    </li>
+                  </ul>
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Testimonials */}
-        <section className="bg-muted/50 py-20">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              Trusted by Legal Teams Worldwide
-            </h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-background p-6 rounded-lg border hover:border-blue-300 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
-                <div className="flex gap-1 mb-4">
-                  {[1,2,3,4,5].map(i => (
-                    <span key={i} className="text-yellow-500 transition-transform duration-200 hover:scale-125">★</span>
-                  ))}
+                <div className="bg-gradient-to-br from-purple-50 to-white p-6 rounded-xl border border-purple-100">
+                  <h3 className="text-xl font-semibold mb-4 text-purple-900">Case Management System</h3>
+                  <ul className="space-y-3 text-muted-foreground">
+                    <li className="flex gap-3">
+                      <span className="text-purple-500 mt-1">•</span>
+                      <span>Integration with eCourts services (CNR tracking)</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-purple-500 mt-1">•</span>
+                      <span>Proceedings timeline and court calendar</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-purple-500 mt-1">•</span>
+                      <span>Legal research access (Indian Kanoon database)</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-purple-500 mt-1">•</span>
+                      <span>Document filing and hearing management</span>
+                    </li>
+                  </ul>
                 </div>
-                <p className="text-muted-foreground mb-4">
-                  "This platform has transformed how we manage contracts. The AI analysis
-                  saves us hours of manual review time."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center transition-transform duration-300 hover:scale-110">
-                    <span className="font-semibold text-blue-600">JS</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold">Jane Smith</p>
-                    <p className="text-sm text-muted-foreground">General Counsel, Tech Corp</p>
-                  </div>
+
+                <div className="bg-gradient-to-br from-green-50 to-white p-6 rounded-xl border border-green-100">
+                  <h3 className="text-xl font-semibold mb-4 text-green-900">Compliance Tracking</h3>
+                  <ul className="space-y-3 text-muted-foreground">
+                    <li className="flex gap-3">
+                      <span className="text-green-500 mt-1">•</span>
+                      <span>Indian regulatory framework support (GST, Companies Act, etc.)</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-green-500 mt-1">•</span>
+                      <span>Due date monitoring and alert system</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-green-500 mt-1">•</span>
+                      <span>Evidence and documentation management</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-green-500 mt-1">•</span>
+                      <span>Audit trail and compliance reporting</span>
+                    </li>
+                  </ul>
                 </div>
-              </div>
-              <div className="bg-background p-6 rounded-lg border hover:border-green-300 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
-                <div className="flex gap-1 mb-4">
-                  {[1,2,3,4,5].map(i => (
-                    <span key={i} className="text-yellow-500 transition-transform duration-200 hover:scale-125">★</span>
-                  ))}
-                </div>
-                <p className="text-muted-foreground mb-4">
-                  "Finally, a comprehensive solution for legal operations. The compliance
-                  tracking alone is worth the investment."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center transition-transform duration-300 hover:scale-110">
-                    <span className="font-semibold text-green-600">MD</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold">Michael Davis</p>
-                    <p className="text-sm text-muted-foreground">Legal Director, Finance Co</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-background p-6 rounded-lg border hover:border-purple-300 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
-                <div className="flex gap-1 mb-4">
-                  {[1,2,3,4,5].map(i => (
-                    <span key={i} className="text-yellow-500 transition-transform duration-200 hover:scale-125">★</span>
-                  ))}
-                </div>
-                <p className="text-muted-foreground mb-4">
-                  "The case management features are excellent. We can track everything
-                  in one place and never miss a deadline."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center transition-transform duration-300 hover:scale-110">
-                    <span className="font-semibold text-purple-600">SJ</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold">Sarah Johnson</p>
-                    <p className="text-sm text-muted-foreground">Partner, Law Firm LLP</p>
-                  </div>
+
+                <div className="bg-gradient-to-br from-orange-50 to-white p-6 rounded-xl border border-orange-100">
+                  <h3 className="text-xl font-semibold mb-4 text-orange-900">Collaboration Features</h3>
+                  <ul className="space-y-3 text-muted-foreground">
+                    <li className="flex gap-3">
+                      <span className="text-orange-500 mt-1">•</span>
+                      <span>Team access with role-based permissions</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-orange-500 mt-1">•</span>
+                      <span>Comments and internal communication</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-orange-500 mt-1">•</span>
+                      <span>Activity logging for full transparency</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-orange-500 mt-1">•</span>
+                      <span>Dashboard analytics and reporting tools</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -419,10 +372,10 @@ export default function Home() {
               
               <div className="relative z-10">
                 <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in">
-                  Ready to Transform Your Legal Operations?
+                  Learn More About the Platform
                 </h2>
                 <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-                  Join thousands of legal professionals who trust our platform
+                  Explore the features and capabilities of our legal management system
                 </p>
                 <Link href="/register">
                   <Button 
@@ -431,27 +384,20 @@ export default function Home() {
                     className="text-lg px-8 group relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl"
                   >
                     <span className="relative z-10 flex items-center gap-2">
-                      Start Your Free Trial Today
+                      Access Information
                       <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
                     </span>
                     <span className="absolute inset-0 bg-gradient-to-r from-white to-blue-50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
                   </Button>
                 </Link>
                 <p className="text-sm mt-4 opacity-75">
-                  No credit card required • Full access • 14-day free trial
+                  For informational purposes only • View demo • Explore features
                 </p>
               </div>
             </div>
           </div>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2025 Tandon Associates. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   )
 }
